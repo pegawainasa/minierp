@@ -12,10 +12,6 @@ export default {
     const url = new URL(request.url);
     const isApiRequest = url.pathname.startsWith('/api/');
 
-    if ((request.method === 'GET' || request.method === 'HEAD') && !isApiRequest && env.ASSETS) {
-      return env.ASSETS.fetch(request);
-    }
-
     if (request.method === 'OPTIONS' && isApiRequest) {
       return new Response('ok', { headers: corsHeaders });
     }
