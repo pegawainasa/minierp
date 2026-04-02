@@ -1,0 +1,5 @@
+jurnal_id,tanggal,ref_no,akun_kode,nama_akun,debit,kredit,cabang_id,keterangan
+JRL-SAMPLE-001,2026-04-01T08:00:00.000Z,BLI-SAMPLE-001,1201,Persediaan,420000,0,CBG-001,Contoh jurnal pembelian
+JRL-SAMPLE-002,2026-04-01T08:00:00.000Z,BLI-SAMPLE-001,2102,Hutang Dagang,0,420000,CBG-001,Contoh jurnal pembelian
+JRL-SAMPLE-003,2026-04-02T09:00:00.000Z,TRX-SAMPLE-001,1101,Kas,45000,0,CBG-001,Contoh jurnal penjualan
+JRL-SAMPLE-004,2026-04-02T09:00:00.000Z,TRX-SAMPLE-001,4101,Penjualan,0,45000,CBG-001,Contoh jurnal penjualan

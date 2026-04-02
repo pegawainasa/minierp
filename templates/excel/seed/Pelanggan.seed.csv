@@ -1,0 +1,3 @@
+pelanggan_id,nama_pelanggan,no_wa,email,member_level,poin,tanggal_gabung,is_active
+PLG-001,Budi Santoso,628111111111,budi@mail.com,REGULAR,100,2026-04-01,1
+PLG-002,Siti Aminah,628222222222,siti@mail.com,SILVER,240,2026-03-15,1

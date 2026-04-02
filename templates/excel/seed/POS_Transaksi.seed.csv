@@ -1,0 +1,2 @@
+trx_id,tanggal,cabang_id,kasir_id,pelanggan_id,voucher_id,metode_bayar,payment_status,subtotal,diskon,ppn,grand_total,status_trx,kirim_wa,catatan
+TRX-SAMPLE-001,2026-04-02T09:00:00.000Z,CBG-001,USR-KSR-001,PLG-001,VCR-001,QRIS,PAID,50000,5000,0,45000,PAID,1,Contoh data transaksi

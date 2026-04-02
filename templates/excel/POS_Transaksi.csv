@@ -1,0 +1,1 @@
+trx_id,tanggal,cabang_id,kasir_id,pelanggan_id,voucher_id,metode_bayar,payment_status,subtotal,diskon,ppn,grand_total,status_trx,kirim_wa,catatan

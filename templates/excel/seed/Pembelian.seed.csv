@@ -1,0 +1,2 @@
+beli_id,tanggal,cabang_id,supplier_id,user_id,subtotal,diskon,ongkir,grand_total,status_bayar,status_terima,catatan
+BLI-SAMPLE-001,2026-04-01T08:00:00.000Z,CBG-001,SUP-001,USR-ADM-001,400000,0,20000,420000,UNPAID,RECEIVED,Contoh data pembelian

@@ -1,0 +1,4 @@
+user_id,nama_user,email,role,cabang_id,pin_kasir,is_active
+USR-ADM-001,Admin Utama,admin@mini-erp.local,ADMIN,CBG-001,123456,1
+USR-KSR-001,Kasir Pusat,kasir@mini-erp.local,KASIR,CBG-001,123456,1
+USR-OWN-001,Owner,owner@mini-erp.local,OWNER,CBG-001,123456,1

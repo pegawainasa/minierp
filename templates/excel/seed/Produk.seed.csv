@@ -1,0 +1,4 @@
+produk_id,sku,barcode,nama_produk,kategori,satuan,harga_beli,harga_jual,stok_minimum,is_active
+PRD-001,SKU-001,899100001,Air Mineral 600ml,Minuman,PCS,3000,5000,10,1
+PRD-002,SKU-002,899100002,Mie Instan Goreng,Sembako,PCS,2500,3500,15,1
+PRD-003,SKU-003,899100003,Sabun Mandi 80gr,Toiletries,PCS,4000,5500,8,1

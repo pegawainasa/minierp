@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini ERP Retail</title>
+  <link rel="stylesheet" href="./assets/style.css" />
+</head>
+<body>
+  <main class="container">
+    <section id="login-view" class="login-wrap">
+      <div class="login-panel">
+        <p class="eyebrow">Internal Portal</p>
+        <h1>Mini ERP Retail</h1>
+        <p class="muted">Masuk sebagai ADMIN, KASIR, atau OWNER</p>
+        <form id="login-form" class="stack">
+          <label>Email
+            <input type="email" name="email" required placeholder="user@toko.com" />
+          </label>
+          <label>PIN
+            <input type="password" name="pin" required placeholder="123456" />
+          </label>
+          <button type="submit">Masuk ke Dashboard</button>
+        </form>
+        <p id="login-msg" class="msg"></p>
+      </div>
+
+      <div class="login-side">
+        <div class="feature-chip">⚡ Cepat untuk kasir</div>
+        <h2>POS + Mini ERP<br/>dalam satu tampilan.</h2>
+        <p class="muted">Transaksi, stok, pembelian, dan laporan ringkas cabang dalam workflow yang simpel.</p>
+      </div>
+    </section>
+
+    <section id="app-view" class="hidden">
+      <header class="shell-topbar">
+        <div>
+          <strong id="welcome"></strong>
+          <p class="muted" id="role-info"></p>
+        </div>
+        <div class="topbar-actions">
+          <span class="status-dot">● Online</span>
+          <button id="logout-btn" class="btn-outline" type="button">Logout</button>
+        </div>
+      </header>
+
+      <div class="shell-grid">
+        <aside class="shell-sidebar">
+          <div class="brand-box">
+            <div class="brand-icon">MR</div>
+            <div>
+              <strong>Mini ERP Retail</strong>
+              <p class="muted">Internal App</p>
+            </div>
+          </div>
+
+          <nav class="nav-stack">
+            <button data-page="dashboard" class="nav-btn active" type="button">🏠 Dashboard</button>
+            <button data-page="produk" class="nav-btn" type="button">📦 Master Produk</button>
+            <button data-page="pos" class="nav-btn" type="button">🧾 Transaksi POS</button>
+            <button data-page="pembelian" class="nav-btn" type="button">🛒 Pembelian</button>
+            <button data-page="voucher" class="nav-btn" type="button">🎁 Promo Voucher</button>
+            <button data-page="laporan" class="nav-btn" type="button">📊 Laporan</button>
+          </nav>
+        </aside>
+
+        <section class="shell-main">
+          <div class="hero-panel">
+            <div>
+              <p class="eyebrow">Retail Operations</p>
+              <h2>Kelola toko lebih cepat, tanpa ribet.</h2>
+              <p class="muted" id="hero-context">Ringkasan operasional cabang aktif Anda.</p>
+            </div>
+            <div class="hero-badges">
+              <span>Stok Realtime</span>
+              <span>Jurnal Otomatis</span>
+              <span>Multi Cabang</span>
+            </div>
+          </div>
+
+          <section class="content">
+            <div id="page-dashboard" class="page"></div>
+            <div id="page-produk" class="page hidden"></div>
+            <div id="page-pos" class="page hidden"></div>
+            <div id="page-pembelian" class="page hidden"></div>
+            <div id="page-voucher" class="page hidden"></div>
+            <div id="page-laporan" class="page hidden"></div>
+          </section>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script src="./assets/app.js"></script>
+</body>
+</html>
