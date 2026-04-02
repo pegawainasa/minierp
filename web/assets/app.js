@@ -1,6 +1,7 @@
 const runtimeConfig = resolveRuntimeConfig();
 const API_BASE = runtimeConfig.apiBase;
 const CLIENT_TOKEN = runtimeConfig.clientToken;
+const SAME_ORIGIN_API_BASE = normalizeApiBase(`${window.location.origin}/api`);
 
 const state = {
   token: localStorage.getItem('mini_erp_token') || '',
@@ -356,6 +357,20 @@ async function requestJson(path, options = {}) {
 
   if (!response.ok) {
     const serverMessage = parsed?.message || parsed?.error;
+    const isSameOriginApi = API_BASE === SAME_ORIGIN_API_BASE;
+
+    if (response.status === 404 && !hasBody && isSameOriginApi) {
+      throw new Error('Endpoint API tidak ditemukan di domain ini. Frontend berjalan di static-only worker. Tambahkan ?api_base=<url-api-worker> pada URL.');
+    }
+
+    if (serverMessage === 'Worker env belum lengkap') {
+      throw new Error('API worker belum dikonfigurasi. Set APPS_SCRIPT_URL dan GATEWAY_SHARED_KEY pada worker API (bukan static worker).');
+    }
+
+    if (serverMessage === 'GATEWAY_SHARED_KEY belum diset.') {
+      throw new Error('Google Apps Script belum dikonfigurasi. Set Script Properties: GATEWAY_SHARED_KEY agar login bisa diproses.');
+    }
+
     throw new Error(serverMessage || `API error ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
   }
 
