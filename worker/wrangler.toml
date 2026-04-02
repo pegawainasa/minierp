@@ -8,3 +8,7 @@ APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqqyTLZQ1jOQlbvr-k0z
 GATEWAY_SHARED_KEY = ""
 CLIENT_API_TOKEN = ""
 PAYMENT_WEBHOOK_SECRET = ""
+
+[assets]
+directory = "../web"
+binding = "ASSETS"

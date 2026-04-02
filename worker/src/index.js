@@ -9,16 +9,26 @@ const corsHeaders = {
 
 export default {
   async fetch(request, env) {
-    if (request.method === 'OPTIONS') {
+    const url = new URL(request.url);
+    const isApiRequest = url.pathname.startsWith('/api/');
+
+    if ((request.method === 'GET' || request.method === 'HEAD') && !isApiRequest && env.ASSETS) {
+      return env.ASSETS.fetch(request);
+    }
+
+    if (request.method === 'OPTIONS' && isApiRequest) {
       return new Response('ok', { headers: corsHeaders });
     }
 
     try {
+      if (!isApiRequest) {
+        return jsonResponse({ success: false, message: 'Route tidak ditemukan' }, 404);
+      }
+
       if (!env.APPS_SCRIPT_URL || !env.GATEWAY_SHARED_KEY) {
         return jsonResponse({ success: false, message: 'Worker env belum lengkap' }, 500);
       }
 
-      const url = new URL(request.url);
       const routeKey = `${request.method.toUpperCase()} ${url.pathname}`;
       const route = routeMap[routeKey];
       if (!route) {
