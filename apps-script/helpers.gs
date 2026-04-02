@@ -30,7 +30,15 @@ function getSheet_(sheetName) {
 }
 
 function toBooleanFlag_(value) {
-  return String(value) === STATUS.ACTIVE;
+  const normalized = String(value === null || value === undefined ? '' : value)
+    .trim()
+    .toUpperCase();
+
+  return normalized === String(STATUS.ACTIVE).trim().toUpperCase() ||
+    normalized === 'Y' ||
+    normalized === 'YES' ||
+    normalized === 'TRUE' ||
+    normalized === '1';
 }
 
 function nowIso_() {
