@@ -4,11 +4,12 @@
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Token'
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Token',
+  'Access-Control-Expose-Headers': 'Server-Timing, X-Edge-Cache'
 };
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const isApiRequest = url.pathname.startsWith('/api/');
 
@@ -42,23 +43,52 @@ export default {
       const body = request.method === 'GET' ? {} : await request.json().catch(() => ({}));
       const payload = route.payloadBuilder ? route.payloadBuilder(body, url, request, env) : body;
 
+      const cachePlan = resolveCachePlan(route, request, url);
+      if (cachePlan) {
+        const cached = await caches.default.match(cachePlan.cacheKeyRequest);
+        if (cached) {
+          return withExtraHeaders(cached, {
+            'X-Edge-Cache': 'HIT'
+          });
+        }
+      }
+
       const upstreamBody = {
         gateway_key: env.GATEWAY_SHARED_KEY,
         action: route.action,
         payload
       };
 
+      const startedAt = Date.now();
+
       const upstreamResp = await fetch(env.APPS_SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(upstreamBody)
       });
+      const upstreamDuration = Date.now() - startedAt;
 
       const text = await upstreamResp.text();
-      return new Response(text, {
+
+      const response = new Response(text, {
         status: upstreamResp.status,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+          'Server-Timing': `upstream;dur=${upstreamDuration}`,
+          'X-Edge-Cache': cachePlan ? 'MISS' : 'BYPASS'
+        }
       });
+
+      if (cachePlan && upstreamResp.ok) {
+        const cacheableResponse = withExtraHeaders(response, {
+          'Cache-Control': `public, max-age=0, s-maxage=${cachePlan.ttlSeconds}, stale-while-revalidate=${cachePlan.staleSeconds}`
+        });
+        ctx.waitUntil(caches.default.put(cachePlan.cacheKeyRequest, cacheableResponse.clone()));
+        return cacheableResponse;
+      }
+
+      return response;
     } catch (err) {
       return jsonResponse({ success: false, message: err.message || 'Gateway error' }, 500);
     }
@@ -85,6 +115,10 @@ const routeMap = {
 
   'GET /api/dashboard/summary': {
     action: 'dashboard.summary',
+    cache: {
+      ttlSeconds: 20,
+      staleSeconds: 40
+    },
     payloadBuilder: (_body, url) => ({
       token: url.searchParams.get('token') || '',
       cabang_id: url.searchParams.get('cabang_id') || '',
@@ -100,5 +134,36 @@ function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
+function resolveCachePlan(route, request, url) {
+  if (!route.cache || request.method.toUpperCase() !== 'GET') {
+    return null;
+  }
+
+  const keyUrl = new URL(url.toString());
+  const clientToken = request.headers.get('X-Client-Token');
+  if (clientToken) {
+    keyUrl.searchParams.set('__ct', clientToken);
+  }
+
+  return {
+    cacheKeyRequest: new Request(keyUrl.toString(), { method: 'GET' }),
+    ttlSeconds: route.cache.ttlSeconds,
+    staleSeconds: route.cache.staleSeconds
+  };
+}
+
+function withExtraHeaders(response, extraHeaders) {
+  const headers = new Headers(response.headers);
+  Object.entries(extraHeaders).forEach(([key, value]) => {
+    headers.set(key, value);
+  });
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
   });
 }

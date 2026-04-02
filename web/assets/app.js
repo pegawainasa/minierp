@@ -5,10 +5,13 @@ const runtimeConfig = resolveRuntimeConfig();
 const API_BASE = runtimeConfig.apiBase;
 const CLIENT_TOKEN = runtimeConfig.clientToken;
 const SAME_ORIGIN_API_BASE = normalizeApiBase(`${window.location.origin}/api`);
+const MASTER_LIST_CACHE_TTL_MS = 30 * 1000;
 
 const state = {
   token: localStorage.getItem('mini_erp_token') || '',
-  user: JSON.parse(localStorage.getItem('mini_erp_user') || 'null')
+  user: JSON.parse(localStorage.getItem('mini_erp_user') || 'null'),
+  masterListCache: new Map(),
+  inFlightMasterList: new Map()
 };
 
 const loginView = document.getElementById('login-view');
@@ -91,11 +94,18 @@ function switchPage(page) {
 
 async function renderAllPages() {
   await renderDashboard();
-  await renderProdukPage();
   renderPosPage();
   renderPembelianPage();
-  await renderVoucherPage();
   renderLaporanPage();
+
+  void preloadSecondaryPages();
+}
+
+async function preloadSecondaryPages() {
+  await Promise.all([
+    renderProdukPage(),
+    renderVoucherPage()
+  ]);
 }
 
 async function renderDashboard() {
@@ -117,12 +127,7 @@ async function renderDashboard() {
 
 async function renderProdukPage() {
   const target = document.getElementById('page-produk');
-  const listRes = await post('/master/list', {
-    module: 'produk',
-    token: state.token,
-    filters: {}
-  }, true);
-  const products = listRes.data || [];
+  const products = await getMasterList('produk');
 
   target.innerHTML = `
     <h2>Master Produk</h2>
@@ -157,6 +162,7 @@ async function renderProdukPage() {
         token: state.token
       });
       document.getElementById('msg-produk').textContent = res.success ? 'Produk tersimpan.' : res.message;
+      invalidateMasterListCache('produk');
       await renderProdukPage();
     } catch (err) {
       document.getElementById('msg-produk').textContent = err.message;
@@ -254,12 +260,46 @@ function renderPembelianPage() {
 
 async function renderVoucherPage() {
   const target = document.getElementById('page-voucher');
-  const listRes = await post('/master/list', { module: 'voucher', token: state.token, filters: {} }, true);
-  const vouchers = listRes.data || [];
+  const vouchers = await getMasterList('voucher');
   target.innerHTML = `
     <h2>Promo Voucher</h2>
     ${renderTable(vouchers, ['voucher_id', 'kode_voucher', 'nama_promo', 'tipe_diskon', 'nilai_diskon', 'kuota', 'status'])}
   `;
+}
+
+async function getMasterList(module) {
+  const cacheKey = `${module}:${state.user?.cabang_id || ''}`;
+  const now = Date.now();
+  const cached = state.masterListCache.get(cacheKey);
+  if (cached && (now - cached.at) < MASTER_LIST_CACHE_TTL_MS) {
+    return cached.data;
+  }
+
+  if (state.inFlightMasterList.has(cacheKey)) {
+    return state.inFlightMasterList.get(cacheKey);
+  }
+
+  const request = post('/master/list', {
+    module,
+    token: state.token,
+    filters: {}
+  }, true)
+    .then((res) => {
+      const data = res.data || [];
+      state.masterListCache.set(cacheKey, { data, at: Date.now() });
+      return data;
+    })
+    .finally(() => {
+      state.inFlightMasterList.delete(cacheKey);
+    });
+
+  state.inFlightMasterList.set(cacheKey, request);
+  return request;
+}
+
+function invalidateMasterListCache(module) {
+  const cacheKey = `${module}:${state.user?.cabang_id || ''}`;
+  state.masterListCache.delete(cacheKey);
 }
 
 function renderLaporanPage() {
