@@ -1,5 +1,8 @@
 # Langkah Implementasi Step-by-Step
 
+> Butuh panduan khusus API Worker (anti mentok static-only)?
+> Lihat: **`docs/api-worker-setup-step-by-step.md`**
+
 ## 1) Siapkan Google Sheets
 
 1. Buat Google Spreadsheet baru.
