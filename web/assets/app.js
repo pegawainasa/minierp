@@ -1,10 +1,10 @@
+const DEFAULT_API_BY_HOST = {
+  'minierp.magicsoapid.workers.dev': 'https://minierp.adsnet-global.workers.dev'
+};
 const runtimeConfig = resolveRuntimeConfig();
 const API_BASE = runtimeConfig.apiBase;
 const CLIENT_TOKEN = runtimeConfig.clientToken;
 const SAME_ORIGIN_API_BASE = normalizeApiBase(`${window.location.origin}/api`);
-const DEFAULT_API_BY_HOST = {
-  'minierp.magicsoapid.workers.dev': 'https://minierp.adsnet-global.workers.dev'
-};
 
 const state = {
   token: localStorage.getItem('mini_erp_token') || '',
