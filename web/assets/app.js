@@ -286,18 +286,46 @@ function resolveRuntimeConfig() {
   const savedApiBase = localStorage.getItem('mini_erp_api_base') || '';
   const savedClientToken = localStorage.getItem('mini_erp_client_token') || '';
 
-  if (queryApiBase) localStorage.setItem('mini_erp_api_base', queryApiBase);
+  if (queryApiBase && isApiBaseInputValid(queryApiBase)) {
+    localStorage.setItem('mini_erp_api_base', queryApiBase);
+  }
   if (queryClientToken) localStorage.setItem('mini_erp_client_token', queryClientToken);
 
-  const apiBase = normalizeApiBase(queryApiBase || savedApiBase || `${window.location.origin}/api`);
+  const selectedApiBase = pickApiBase(queryApiBase, savedApiBase);
+  const apiBase = normalizeApiBase(selectedApiBase || `${window.location.origin}/api`);
   const clientToken = (queryClientToken || savedClientToken || '').trim();
 
   return { apiBase, clientToken };
 }
 
+function pickApiBase(queryApiBase, savedApiBase) {
+  if (isApiBaseInputValid(queryApiBase)) return queryApiBase;
+  if (isApiBaseInputValid(savedApiBase)) return savedApiBase;
+  return '';
+}
+
+function isApiBaseInputValid(value) {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return false;
+
+  if (trimmed.startsWith('/')) return true;
+
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch (_err) {
+    return false;
+  }
+}
+
 function normalizeApiBase(value) {
   const trimmed = String(value || '').trim().replace(/\/$/, '');
   if (!trimmed) return `${window.location.origin}/api`;
+
+  if (!isApiBaseInputValid(trimmed)) {
+    return `${window.location.origin}/api`;
+  }
+
   if (/\/api$/i.test(trimmed)) return trimmed;
   return `${trimmed}/api`;
 }
