@@ -1,5 +1,6 @@
-const API_BASE = 'https://YOUR-WORKER-URL.workers.dev/api';
-const CLIENT_TOKEN = 'YOUR_CLIENT_API_TOKEN';
+const runtimeConfig = resolveRuntimeConfig();
+const API_BASE = runtimeConfig.apiBase;
+const CLIENT_TOKEN = runtimeConfig.clientToken;
 
 const state = {
   token: localStorage.getItem('mini_erp_token') || '',
@@ -277,29 +278,69 @@ function renderTable(rows, columns) {
   return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
 }
 
+function resolveRuntimeConfig() {
+  const params = new URLSearchParams(window.location.search);
+  const queryApiBase = params.get('api_base') || params.get('api') || '';
+  const queryClientToken = params.get('client_token') || params.get('token') || '';
+  const savedApiBase = localStorage.getItem('mini_erp_api_base') || '';
+  const savedClientToken = localStorage.getItem('mini_erp_client_token') || '';
+
+  if (queryApiBase) localStorage.setItem('mini_erp_api_base', queryApiBase);
+  if (queryClientToken) localStorage.setItem('mini_erp_client_token', queryClientToken);
+
+  const apiBase = normalizeApiBase(queryApiBase || savedApiBase || `${window.location.origin}/api`);
+  const clientToken = (queryClientToken || savedClientToken || '').trim();
+
+  return { apiBase, clientToken };
+}
+
+function normalizeApiBase(value) {
+  const trimmed = String(value || '').trim().replace(/\/$/, '');
+  if (!trimmed) return `${window.location.origin}/api`;
+  if (/\/api$/i.test(trimmed)) return trimmed;
+  return `${trimmed}/api`;
+}
+
 async function get(path) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: {
-      'X-Client-Token': CLIENT_TOKEN
-    }
+  return requestJson(path, {
+    method: 'GET'
   });
-  return res.json();
 }
 
 async function post(path, body, silent = false) {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const data = await requestJson(path, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'X-Client-Token': CLIENT_TOKEN
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify(body)
   });
-  const data = await res.json();
   if (!silent && !data.success) {
     throw new Error(data.message || 'Request gagal');
   }
   return data;
+}
+
+async function requestJson(path, options = {}) {
+  const headers = {
+    ...(options.headers || {})
+  };
+
+  if (CLIENT_TOKEN) {
+    headers['X-Client-Token'] = CLIENT_TOKEN;
+  }
+
+  let response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers
+    });
+  } catch (_err) {
+    throw new Error(`Gagal terhubung ke API (${API_BASE}). Tambahkan ?api_base=<url-worker> dan ?client_token=<token>.`);
+  }
+
+  return response.json();
 }
 
 function formatNum(v) {
