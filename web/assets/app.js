@@ -340,7 +340,34 @@ async function requestJson(path, options = {}) {
     throw new Error(`Gagal terhubung ke API (${API_BASE}). Tambahkan ?api_base=<url-worker> dan ?client_token=<token>.`);
   }
 
-  return response.json();
+  const rawBody = await response.text();
+  const hasBody = rawBody.trim().length > 0;
+  const contentType = response.headers.get('content-type') || '';
+  const looksLikeJson = contentType.includes('application/json') || rawBody.trim().startsWith('{') || rawBody.trim().startsWith('[');
+
+  let parsed = null;
+  if (hasBody && looksLikeJson) {
+    try {
+      parsed = JSON.parse(rawBody);
+    } catch (_err) {
+      throw new Error(`Respons API tidak valid (status ${response.status}).`);
+    }
+  }
+
+  if (!response.ok) {
+    const serverMessage = parsed?.message || parsed?.error;
+    throw new Error(serverMessage || `API error ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
+  }
+
+  if (parsed !== null) {
+    return parsed;
+  }
+
+  return {
+    success: true,
+    data: null,
+    message: hasBody ? rawBody : ''
+  };
 }
 
 function formatNum(v) {
