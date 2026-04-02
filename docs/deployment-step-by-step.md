@@ -36,21 +36,27 @@
 ## 3) Deploy Cloudflare Worker
 
 1. Masuk ke Cloudflare Workers.
-2. Upload kode `worker/src/index.js`.
-3. Set environment variables:
+2. Deploy kode dari folder `worker/` (bukan upload `web/` saja) agar Worker bersifat **script-based**:
+   - `npx wrangler deploy`
+3. Set environment variables di **Worker API**:
    - `APPS_SCRIPT_URL` = URL Web App Apps Script
    - `GATEWAY_SHARED_KEY` = sama persis dengan Script Properties
    - `CLIENT_API_TOKEN` = token untuk request dari UI
    - `PAYMENT_WEBHOOK_SECRET` = sama dengan Script Properties (untuk route webhook)
-4. Deploy Worker.
+4. Pastikan endpoint ini tidak 404:
+   - `POST https://<worker-api-domain>/api/auth/login`
+
+> Jika muncul error "Variables cannot be added to a Worker that only has static assets",
+> berarti yang dibuka adalah Worker static-only/Pages. Buat Worker API terpisah yang punya
+> `main = "src/index.js"` lalu set vars di Worker API tersebut.
 
 ## 4) Jalankan Web UI
 
-1. Buka `web/assets/app.js`.
-2. Isi:
-   - `API_BASE` = URL Worker Anda + `/api`
-   - `CLIENT_TOKEN` = `CLIENT_API_TOKEN`
-3. Host folder `web/` di static hosting internal (Cloudflare Pages/Nginx/shared hosting).
+1. Host folder `web/` di static hosting (Cloudflare Pages/Workers static/Nginx/shared hosting).
+2. Arahkan UI ke Worker API dengan salah satu cara:
+   - URL parameter saat buka UI: `?api_base=https://<worker-api-domain>&client_token=<CLIENT_API_TOKEN>`
+   - atau simpan ke localStorage via query sekali, selanjutnya tersimpan otomatis.
+3. Jika UI dan API satu domain script-worker, fallback otomatis ke `${origin}/api` tetap berjalan.
 
 ## 5) Seed Data Awal (wajib)
 
