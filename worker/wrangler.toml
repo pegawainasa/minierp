@@ -5,6 +5,6 @@ compatibility_date = "2026-04-02"
 [vars]
 # Isi dari dashboard Cloudflare atau wrangler secret/vars
 APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqqyTLZQ1jOQlbvr-k0zRjQgfQK4dKezhY1_E6uwy9bKUxnLjQR2DRtrW_fPeYdfFl/exec"
-GATEWAY_SHARED_KEY = ""
+GATEWAY_SHARED_KEY = "1e3HvyGavuXijG"
 CLIENT_API_TOKEN = ""
 PAYMENT_WEBHOOK_SECRET = ""

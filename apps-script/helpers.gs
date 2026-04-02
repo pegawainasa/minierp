@@ -2,11 +2,24 @@
  * Helper umum untuk I/O sheet dan response API.
  */
 function getSpreadsheet_() {
-  const spreadsheetId = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
-  if (!spreadsheetId) {
+  const rawSpreadsheetId = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
+  if (!rawSpreadsheetId) {
     throw new Error('SPREADSHEET_ID belum diset di Script Properties.');
   }
+  const spreadsheetId = normalizeSpreadsheetId_(rawSpreadsheetId);
   return SpreadsheetApp.openById(spreadsheetId);
+}
+
+function normalizeSpreadsheetId_(value) {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return '';
+
+  const idFromUrlMatch = trimmed.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (idFromUrlMatch) {
+    return idFromUrlMatch[1];
+  }
+
+  return trimmed.replace(/[\/?#].*$/, '');
 }
 
 function getSheet_(sheetName) {
