@@ -80,6 +80,8 @@ function showApp() {
   welcome.textContent = `Halo, ${state.user?.nama_user || '-'}`;
   roleInfo.textContent = `Role: ${state.user?.role || '-'} | Cabang: ${state.user?.cabang_id || '-'}`;
   heroContext.textContent = `Anda login sebagai ${state.user?.role || '-'} pada cabang ${state.user?.cabang_id || '-'}.`;
+  switchPage('dashboard');
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
 }
 
 function switchPage(page) {
