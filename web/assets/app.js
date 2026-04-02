@@ -2,6 +2,9 @@ const runtimeConfig = resolveRuntimeConfig();
 const API_BASE = runtimeConfig.apiBase;
 const CLIENT_TOKEN = runtimeConfig.clientToken;
 const SAME_ORIGIN_API_BASE = normalizeApiBase(`${window.location.origin}/api`);
+const DEFAULT_API_BY_HOST = {
+  'minierp.magicsoapid.workers.dev': 'https://minierp.adsnet-global.workers.dev'
+};
 
 const state = {
   token: localStorage.getItem('mini_erp_token') || '',
@@ -291,16 +294,18 @@ function resolveRuntimeConfig() {
   }
   if (queryClientToken) localStorage.setItem('mini_erp_client_token', queryClientToken);
 
-  const selectedApiBase = pickApiBase(queryApiBase, savedApiBase);
+  const hostDefaultApiBase = DEFAULT_API_BY_HOST[window.location.hostname] || '';
+  const selectedApiBase = pickApiBase(queryApiBase, savedApiBase, hostDefaultApiBase);
   const apiBase = normalizeApiBase(selectedApiBase || `${window.location.origin}/api`);
   const clientToken = (queryClientToken || savedClientToken || '').trim();
 
   return { apiBase, clientToken };
 }
 
-function pickApiBase(queryApiBase, savedApiBase) {
+function pickApiBase(queryApiBase, savedApiBase, hostDefaultApiBase = '') {
   if (isApiBaseInputValid(queryApiBase)) return queryApiBase;
   if (isApiBaseInputValid(savedApiBase)) return savedApiBase;
+  if (isApiBaseInputValid(hostDefaultApiBase)) return hostDefaultApiBase;
   return '';
 }
 
